@@ -99,14 +99,17 @@ export namespace LLM {
           // TODO: move this to a proper hook
           const isOpenaiOauth = item.id === "openai" && info?.type === "oauth"
 
+          const soul = yield* SystemPrompt.soul()
+          const providerPrompt = yield* SystemPrompt.provider(input.model)
+
           const system: string[] = []
           system.push(
             [
               // kilocode_change start - soul defines core identity and personality
-              ...(isOpenaiOauth ? [] : [SystemPrompt.soul()]),
+              ...(isOpenaiOauth ? [] : [soul]),
               // kilocode_change end
               // use agent prompt otherwise provider prompt
-              ...(input.agent.prompt ? [input.agent.prompt] : SystemPrompt.provider(input.model)),
+              ...(input.agent.prompt ? [input.agent.prompt] : providerPrompt),
               // any custom prompt passed into this call
               ...input.system,
               // any custom prompt from last user message
@@ -148,7 +151,7 @@ export namespace LLM {
           )
           if (isOpenaiOauth) {
             // kilocode_change start - prepend soul to instructions
-            options.instructions = SystemPrompt.soul() + "\n" + system.join("\n")
+            options.instructions = soul + "\n" + system.join("\n")
             // kilocode_change end
           }
 

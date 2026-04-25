@@ -20,50 +20,53 @@ import { Skill } from "@/skill"
 // kilocode_change start
 import SOUL from "../kilocode/soul.txt"
 import { staticEnvLines, type EditorContext } from "../kilocode/editor-context"
+import { KiloPromptLoader } from "../kilocode/prompt-loader"
 // kilocode_change end
 
 export namespace SystemPrompt {
   // kilocode_change start
   export function instructions() {
-    return PROMPT_CODEX.trim()
+    return KiloPromptLoader.get("codex", PROMPT_CODEX)
   }
 
   export function soul() {
-    return SOUL.trim()
+    return KiloPromptLoader.get("soul", SOUL)
   }
   // kilocode_change end
 
-  export function provider(model: Provider.Model) {
-    // kilocode_change start
-    switch (model.prompt) {
-      case "anthropic":
-        return [PROMPT_ANTHROPIC]
-      case "anthropic_without_todo":
-        return [PROMPT_DEFAULT]
-      case "beast":
-        return [PROMPT_BEAST]
-      case "codex":
-        return [PROMPT_CODEX]
-      case "gemini":
-        return [PROMPT_GEMINI]
-      case "trinity":
-        return [PROMPT_TRINITY]
-    }
-    // kilocode_change end
-
-    if (model.api.id.includes("gpt-4") || model.api.id.includes("o1") || model.api.id.includes("o3"))
-      return [PROMPT_BEAST]
-    if (model.api.id.includes("gpt")) {
-      if (model.api.id.includes("codex")) {
-        return [PROMPT_CODEX]
+  export function provider(model: Provider.Model): Effect.Effect<string[]> {
+    return Effect.gen(function* () {
+      // kilocode_change start
+      switch (model.prompt) {
+        case "anthropic":
+          return [yield* KiloPromptLoader.get("anthropic", PROMPT_ANTHROPIC)]
+        case "anthropic_without_todo":
+          return [yield* KiloPromptLoader.get("default", PROMPT_DEFAULT)]
+        case "beast":
+          return [yield* KiloPromptLoader.get("beast", PROMPT_BEAST)]
+        case "codex":
+          return [yield* KiloPromptLoader.get("codex", PROMPT_CODEX)]
+        case "gemini":
+          return [yield* KiloPromptLoader.get("gemini", PROMPT_GEMINI)]
+        case "trinity":
+          return [yield* KiloPromptLoader.get("trinity", PROMPT_TRINITY)]
       }
-      return [PROMPT_GPT]
-    }
-    if (model.api.id.includes("gemini-")) return [PROMPT_GEMINI]
-    if (model.api.id.includes("claude")) return [PROMPT_ANTHROPIC]
-    if (model.api.id.toLowerCase().includes("trinity")) return [PROMPT_TRINITY]
-    if (model.api.id.toLowerCase().includes("kimi")) return [PROMPT_KIMI]
-    return [PROMPT_DEFAULT]
+      // kilocode_change end
+
+      if (model.api.id.includes("gpt-4") || model.api.id.includes("o1") || model.api.id.includes("o3"))
+        return [yield* KiloPromptLoader.get("beast", PROMPT_BEAST)]
+      if (model.api.id.includes("gpt")) {
+        if (model.api.id.includes("codex")) {
+          return [yield* KiloPromptLoader.get("codex", PROMPT_CODEX)]
+        }
+        return [yield* KiloPromptLoader.get("gpt", PROMPT_GPT)]
+      }
+      if (model.api.id.includes("gemini-")) return [yield* KiloPromptLoader.get("gemini", PROMPT_GEMINI)]
+      if (model.api.id.includes("claude")) return [yield* KiloPromptLoader.get("anthropic", PROMPT_ANTHROPIC)]
+      if (model.api.id.toLowerCase().includes("trinity")) return [yield* KiloPromptLoader.get("trinity", PROMPT_TRINITY)]
+      if (model.api.id.toLowerCase().includes("kimi")) return [yield* KiloPromptLoader.get("kimi", PROMPT_KIMI)]
+      return [yield* KiloPromptLoader.get("default", PROMPT_DEFAULT)]
+    })
   }
 
   export interface Interface {

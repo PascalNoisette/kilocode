@@ -15,6 +15,8 @@ import PROMPT_DEBUG from "../../agent/prompt/debug.txt"
 import PROMPT_ORCHESTRATOR from "../../agent/prompt/orchestrator.txt"
 import PROMPT_ASK from "../../agent/prompt/ask.txt"
 import PROMPT_EXPLORE from "../../agent/prompt/explore.txt"
+import PROMPT_PLAN from "../../session/prompt/plan.txt" // kilocode_change
+import { KiloPromptLoader } from "../prompt-loader" // kilocode_change
 
 // Safe bash commands that don't need user approval.
 // Only commands that cannot execute arbitrary code or subprocesses.
@@ -216,8 +218,9 @@ export function patchAgents(
   user: Permission.Ruleset,
   cfg: Config.Info,
   kilo: KiloData,
-) {
-  // Rename "build" → "code" for backward compatibility
+): Effect.Effect<void> {
+  return Effect.gen(function* () {
+    // Rename "build" → "code" for backward compatibility
   if (agents.build) {
     agents.code = { ...agents.build, name: "code" }
     delete agents.build
@@ -248,6 +251,7 @@ export function patchAgents(
         }),
         user,
       ),
+      prompt: yield* KiloPromptLoader.get("plan", PROMPT_PLAN), // kilocode_change
     }
   }
 
@@ -276,104 +280,105 @@ export function patchAgents(
         user,
       ),
       prompt: cfg.experimental?.codebase_search
-        ? `Prefer using the codebase_search tool for codebase searches — it performs intelligent multi-step code search and returns the most relevant code spans.\n\n${PROMPT_EXPLORE}`
-        : PROMPT_EXPLORE,
+        ? `Prefer using the codebase_search tool for codebase searches — it performs intelligent multi-step code search and returns the most relevant code spans.\n\n${yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE)}`
+        : yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE),
     }
   }
 
-  // Add debug agent
-  agents.debug = {
-    name: "debug",
-    description: "Diagnose and fix software issues with systematic debugging methodology.",
-    prompt: PROMPT_DEBUG,
-    options: {},
-    permission: Permission.merge(
-      defaults,
-      Permission.fromConfig({
-        question: "allow",
-        suggest: "allow", // kilocode_change
-        plan_enter: "allow",
-      }),
-      user,
-    ),
-    mode: "primary",
-    native: true,
-  }
+    // Add debug agent
+    agents.debug = {
+      name: "debug",
+      description: "Diagnose and fix software issues with systematic debugging methodology.",
+      prompt: yield* KiloPromptLoader.get("debug", PROMPT_DEBUG), // kilocode_change
+      options: {},
+      permission: Permission.merge(
+        defaults,
+        Permission.fromConfig({
+          question: "allow",
+          suggest: "allow", // kilocode_change
+          plan_enter: "allow",
+        }),
+        user,
+      ),
+      mode: "primary",
+      native: true,
+    }
 
-  // Add orchestrator agent
-  agents.orchestrator = {
-    name: "orchestrator",
-    description: "Coordinate complex tasks by delegating to specialized agents in parallel.",
-    prompt: PROMPT_ORCHESTRATOR,
-    options: {},
-    permission: Permission.merge(
-      defaults,
-      Permission.fromConfig({
-        "*": "deny",
-        read: "allow",
-        grep: "allow",
-        glob: "allow",
-        list: "allow",
-        question: "allow",
-        suggest: "allow", // kilocode_change
-        task: "allow",
-        todoread: "allow",
-        todowrite: "allow",
-        webfetch: "allow",
-        websearch: "allow",
-        codesearch: "allow",
-        codebase_search: "allow",
-        external_directory: {
-          [Truncate.GLOB]: "allow",
-        },
-      }),
-      user,
-      // Enforce bash deny after user so user config cannot re-enable shell
-      Permission.fromConfig({
-        bash: "deny",
-      }),
-    ),
-    mode: "primary",
-    native: true,
-    deprecated: true,
-  }
+    // Add orchestrator agent
+    agents.orchestrator = {
+      name: "orchestrator",
+      description: "Coordinate complex tasks by delegating to specialized agents in parallel.",
+      prompt: yield* KiloPromptLoader.get("orchestrator", PROMPT_ORCHESTRATOR), // kilocode_change
+      options: {},
+      permission: Permission.merge(
+        defaults,
+        Permission.fromConfig({
+          "*": "deny",
+          read: "allow",
+          grep: "allow",
+          glob: "allow",
+          list: "allow",
+          question: "allow",
+          suggest: "allow", // kilocode_change
+          task: "allow",
+          todoread: "allow",
+          todowrite: "allow",
+          webfetch: "allow",
+          websearch: "allow",
+          codesearch: "allow",
+          codebase_search: "allow",
+          external_directory: {
+            [Truncate.GLOB]: "allow",
+          },
+        }),
+        user,
+        // Enforce bash deny after user so user config cannot re-enable shell
+        Permission.fromConfig({
+          bash: "deny",
+        }),
+      ),
+      mode: "primary",
+      native: true,
+      deprecated: true,
+    }
 
-  // Add ask agent
-  agents.ask = {
-    name: "ask",
-    description: "Get answers and explanations without making changes to the codebase.",
-    prompt: PROMPT_ASK,
-    options: {},
-    permission: Permission.merge(
-      defaults,
-      user, // user before ask-specific so ask's deny+allowlist wins
-      Permission.fromConfig({
-        "*": "deny",
-        bash: readOnlyBash,
-        read: {
-          "*": "allow",
-          "*.env": "ask",
-          "*.env.*": "ask",
-          "*.env.example": "allow",
-        },
-        grep: "allow",
-        glob: "allow",
-        list: "allow",
-        question: "allow",
-        webfetch: "allow",
-        websearch: "allow",
-        codesearch: "allow",
-        codebase_search: "allow",
-        external_directory: {
-          [Truncate.GLOB]: "allow",
-        },
-        ...kilo.mcpRules,
-      }),
-      user.filter((r: Permission.Rule) => r.action === "deny"), // re-apply user denies so explicit MCP blocks win over mcpRules
-    ),
-    mode: "primary",
-    native: true,
-  }
+    // Add ask agent
+    agents.ask = {
+      name: "ask",
+      description: "Get answers and explanations without making changes to the codebase.",
+      prompt: yield* KiloPromptLoader.get("ask", PROMPT_ASK), // kilocode_change
+      options: {},
+      permission: Permission.merge(
+        defaults,
+        user, // user before ask-specific so ask's deny+allowlist wins
+        Permission.fromConfig({
+          "*": "deny",
+          bash: readOnlyBash,
+          read: {
+            "*": "allow",
+            "*.env": "ask",
+            "*.env.*": "ask",
+            "*.env.example": "allow",
+          },
+          grep: "allow",
+          glob: "allow",
+          list: "allow",
+          question: "allow",
+          webfetch: "allow",
+          websearch: "allow",
+          codesearch: "allow",
+          codebase_search: "allow",
+          external_directory: {
+            [Truncate.GLOB]: "allow",
+          },
+          ...kilo.mcpRules,
+        }),
+        user.filter((r: Permission.Rule) => r.action === "deny"), // re-apply user denies so explicit MCP blocks win over mcpRules
+      ),
+      mode: "primary",
+      native: true,
+    }
+  })
 }
 
 export const RemoveError = NamedError.create(

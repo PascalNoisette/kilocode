@@ -24,6 +24,7 @@ import { Instruction } from "./instruction"
 import { Plugin } from "../plugin"
 import CODE_SWITCH from "../session/prompt/code-switch.txt"
 import MAX_STEPS from "../session/prompt/max-steps.txt"
+import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 import { ToolRegistry } from "../tool/registry"
 import { MCP } from "../mcp"
 import { LSP } from "../lsp"
@@ -250,7 +251,7 @@ export namespace SessionPrompt {
               messageID: userMessage.info.id,
               sessionID: userMessage.info.sessionID,
               type: "text",
-              text: CODE_SWITCH,
+              text: yield* KiloPromptLoader.get("code-switch", CODE_SWITCH), // kilocode_change
               synthetic: true,
             })
           }
@@ -267,7 +268,9 @@ export namespace SessionPrompt {
             sessionID: userMessage.info.sessionID,
             type: "text",
             text:
-              CODE_SWITCH + "\n\n" + `A plan file exists at ${plan}. You should execute on the plan defined within it`, // kilocode_change - renamed from BUILD_SWITCH to CODE_SWITCH
+              (yield* KiloPromptLoader.get("code-switch", CODE_SWITCH)) + // kilocode_change
+              "\n\n" +
+              `A plan file exists at ${plan}. You should execute on the plan defined within it`, // kilocode_change - renamed from BUILD_SWITCH to CODE_SWITCH
             synthetic: true,
           })
           userMessage.parts.push(part)
@@ -1537,7 +1540,12 @@ NOTE: At any point in time through this workflow you should feel free to ask the
                 sessionID,
                 parentSessionID: session.parentID,
                 system,
-                messages: [...modelMsgs, ...(isLastStep ? [{ role: "assistant" as const, content: MAX_STEPS }] : [])],
+                messages: [
+                  ...modelMsgs,
+                  ...(isLastStep
+                    ? [{ role: "assistant" as const, content: yield* KiloPromptLoader.get("max-steps", MAX_STEPS) }]
+                    : []),
+                ], // kilocode_change
                 tools,
                 model,
                 toolChoice: format.type === "json_schema" ? "required" : undefined,

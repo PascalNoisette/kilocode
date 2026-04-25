@@ -14,9 +14,11 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import PROMPT_PLAN from "../session/prompt/plan.txt" // kilocode_change
 import { Permission } from "@/permission"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global" // kilocode_change
+import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 import { KilocodePaths } from "@/kilocode/paths" // kilocode_change
 import path from "path" // kilocode_change
 import { Plugin } from "@/plugin"
@@ -163,6 +165,7 @@ export namespace Agent {
               ),
               mode: "primary",
               native: true,
+              prompt: yield* KiloPromptLoader.get("plan", PROMPT_PLAN), // kilocode_change
             },
             general: {
               name: "general",
@@ -200,7 +203,7 @@ export namespace Agent {
                 user,
               ),
               description: `Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.`,
-              prompt: PROMPT_EXPLORE,
+              prompt: yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE), // kilocode_change
               options: {},
               mode: "subagent",
               native: true,
@@ -210,7 +213,7 @@ export namespace Agent {
               mode: "primary",
               native: true,
               hidden: true,
-              prompt: PROMPT_COMPACTION,
+              prompt: yield* KiloPromptLoader.get("compaction", PROMPT_COMPACTION), // kilocode_change
               permission: Permission.merge(
                 defaults,
                 Permission.fromConfig({
@@ -234,7 +237,7 @@ export namespace Agent {
                 }),
                 user,
               ),
-              prompt: PROMPT_TITLE,
+              prompt: yield* KiloPromptLoader.get("title", PROMPT_TITLE), // kilocode_change
             },
             summary: {
               name: "summary",
@@ -249,12 +252,12 @@ export namespace Agent {
                 }),
                 user,
               ),
-              prompt: PROMPT_SUMMARY,
+              prompt: yield* KiloPromptLoader.get("summary", PROMPT_SUMMARY), // kilocode_change
             },
           }
 
           // kilocode_change start - rename build→code, add debug/orchestrator/ask, patch plan/explore
-          KiloAgent.patchAgents(agents, defaults, user, cfg, kilo)
+          yield* KiloAgent.patchAgents(agents, defaults, user, cfg, kilo)
           // kilocode_change end
 
           // kilocode_change start - preprocess config to remap "build" key → "code"

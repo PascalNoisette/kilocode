@@ -14,6 +14,7 @@ import { Identifier } from "@/id/id"
 import { Filesystem } from "@/util/filesystem"
 import PROMPT_PLAN from "@/session/prompt/plan.txt"
 import CODE_SWITCH from "@/session/prompt/code-switch.txt"
+import { KiloPromptLoader } from "../prompt-loader" // kilocode_change
 
 export namespace KiloSessionPrompt {
   /**
@@ -132,16 +133,13 @@ export namespace KiloSessionPrompt {
       messageID: input.userMessage.info.id,
       sessionID: input.userMessage.info.sessionID,
       type: "text",
-      text: PROMPT_PLAN + `\n\n## Plan File\n${info}\nThis is the ONLY file you are allowed to write to or edit.`,
+      text:
+        (await KiloPromptLoader.getAsync("plan", PROMPT_PLAN)) +
+        `\n\n## Plan File\n${info}\nThis is the ONLY file you are allowed to write to or edit.`, // kilocode_change
       synthetic: true,
     })
   }
 
-  /**
-   * Returns the CODE_SWITCH prompt text (plan-to-code transition).
-   * Used when switching from plan agent to code agent.
-   */
-  export const CODE_SWITCH_TEXT = CODE_SWITCH
 
   /**
    * Determines the close reason for a session turn.

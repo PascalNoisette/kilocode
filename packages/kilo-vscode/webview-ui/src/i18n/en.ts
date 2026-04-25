@@ -949,6 +949,10 @@ export const dict = {
   "settings.section.configuration": "Configuration",
   "settings.agentBehaviour.title": "Agent Behaviour",
   "settings.autoApprove.title": "Auto-Approve",
+  "settings.tools.title": "Tools",
+  "settings.tools.description":
+    "Configure tool permissions for each agent. Disabling unused tools reduces token usage and improves performance.",
+  "settings.tools.loading": "Loading tools...",
   "settings.browser.title": "Browser",
   "settings.checkpoints.title": "Checkpoints",
   "settings.display.title": "Display",

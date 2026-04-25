@@ -753,6 +753,9 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
         case "requestCommands":
           this.fetchAndSendCommands().catch((e) => console.error("[Kilo New] fetchAndSendCommands failed:", e))
           break
+        case "requestTools":
+          this.fetchAndSendTools().catch((e) => console.error("[Kilo New] fetchAndSendTools failed:", e))
+          break
         case "removeSkill":
           this.removeSkillViaCli(message.location).catch((e: unknown) =>
             console.error("[Kilo New] removeSkill failed:", e),
@@ -1750,6 +1753,27 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       this.postMessage(message)
     } catch (error) {
       console.error("[Kilo New] KiloProvider: Failed to fetch skills:", error)
+    }
+  }
+
+  private async fetchAndSendTools(): Promise<void> {
+    if (!this.client) {
+      return
+    }
+
+    try {
+      const workspaceDir = this.getWorkspaceDirectory()
+      const { data: tools } = await retry(() =>
+        this.client!.app.tools({ directory: workspaceDir }, { throwOnError: true }),
+      )
+
+      const message = {
+        type: "toolsLoaded",
+        tools,
+      }
+      this.postMessage(message)
+    } catch (error) {
+      console.error("[Kilo New] KiloProvider: Failed to fetch tools:", error)
     }
   }
 

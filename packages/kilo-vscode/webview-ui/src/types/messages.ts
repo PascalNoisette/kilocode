@@ -286,6 +286,11 @@ export interface ServerInfo {
   version?: string
 }
 
+export interface ToolInfo {
+  id: string
+  description: string
+}
+
 // Device auth flow status
 export type DeviceAuthStatus = "idle" | "initiating" | "pending" | "success" | "error" | "cancelled"
 
@@ -732,6 +737,11 @@ export interface AgentsLoadedMessage {
 export interface SkillsLoadedMessage {
   type: "skillsLoaded"
   skills: SkillInfo[]
+}
+
+export interface ToolsLoadedMessage {
+  type: "toolsLoaded"
+  tools: ToolInfo[]
 }
 
 export interface CommandsLoadedMessage {
@@ -1545,6 +1555,7 @@ export type ExtensionMessage =
   | ProvidersLoadedMessage
   | AgentsLoadedMessage
   | SkillsLoadedMessage
+  | ToolsLoadedMessage
   | CommandsLoadedMessage
   | AutocompleteSettingsLoadedMessage
   | ChatCompletionResultMessage
@@ -1797,6 +1808,10 @@ export interface RequestAgentsMessage {
 
 export interface RequestSkillsMessage {
   type: "requestSkills"
+}
+
+export interface RequestToolsMessage {
+  type: "requestTools"
 }
 
 export interface RequestCommandsMessage {
@@ -2513,6 +2528,7 @@ export type WebviewMessage =
   | CompactRequest
   | RequestAgentsMessage
   | RequestSkillsMessage
+  | RequestToolsMessage
   | RequestCommandsMessage
   | SendCommandRequest
   | RemoveSkillMessage

@@ -16,6 +16,7 @@ import PROMPT_ORCHESTRATOR from "../../agent/prompt/orchestrator.txt"
 import PROMPT_ASK from "../../agent/prompt/ask.txt"
 import PROMPT_EXPLORE from "../../agent/prompt/explore.txt"
 import PROMPT_PLAN from "../../session/prompt/plan.txt" // kilocode_change
+import { Effect } from "effect"
 import { KiloPromptLoader } from "../prompt-loader" // kilocode_change
 
 // Safe bash commands that don't need user approval.
@@ -221,69 +222,69 @@ export function patchAgents(
 ): Effect.Effect<void> {
   return Effect.gen(function* () {
     // Rename "build" → "code" for backward compatibility
-  if (agents.build) {
-    agents.code = { ...agents.build, name: "code" }
-    delete agents.build
-  }
-
-  // Patch plan mode
-  if (agents.plan) {
-    agents.plan = {
-      ...agents.plan,
-      description: "Plan mode. Only allows editing plan files; asks before editing anything else.",
-      permission: Permission.merge(
-        defaults,
-        Permission.fromConfig({
-          question: "allow",
-          suggest: "allow", // kilocode_change
-          plan_exit: "allow",
-          bash: readOnlyBash,
-          ...kilo.mcpRules,
-          external_directory: {
-            [path.join(Global.Path.data, "plans", "*")]: "allow",
-          },
-          edit: {
-            "*": "ask",
-            [path.join(".kilo", "plans", "*.md")]: "allow",
-            [path.join(".opencode", "plans", "*.md")]: "allow",
-            [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
-          },
-        }),
-        user,
-      ),
-      prompt: yield* KiloPromptLoader.get("plan", PROMPT_PLAN), // kilocode_change
+    if (agents.build) {
+      agents.code = { ...agents.build, name: "code" }
+      delete agents.build
     }
-  }
 
-  // Patch explore with codebase_search and conditional prompt
-  if (agents.explore) {
-    agents.explore = {
-      ...agents.explore,
-      permission: Permission.merge(
-        defaults,
-        Permission.fromConfig({
-          "*": "deny",
-          grep: "allow",
-          glob: "allow",
-          list: "allow",
-          bash: "allow",
-          webfetch: "allow",
-          websearch: "allow",
-          codesearch: "allow",
-          codebase_search: "allow",
-          read: "allow",
-          external_directory: {
-            "*": "ask",
-            [Truncate.GLOB]: "allow",
-          },
-        }),
-        user,
-      ),
-      prompt: cfg.experimental?.codebase_search
-        ? `Prefer using the codebase_search tool for codebase searches — it performs intelligent multi-step code search and returns the most relevant code spans.\n\n${yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE)}`
-        : yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE),
+    // Patch plan mode
+    if (agents.plan) {
+      agents.plan = {
+        ...agents.plan,
+        description: "Plan mode. Only allows editing plan files; asks before editing anything else.",
+        permission: Permission.merge(
+          defaults,
+          Permission.fromConfig({
+            question: "allow",
+            suggest: "allow", // kilocode_change
+            plan_exit: "allow",
+            bash: readOnlyBash,
+            ...kilo.mcpRules,
+            external_directory: {
+              [path.join(Global.Path.data, "plans", "*")]: "allow",
+            },
+            edit: {
+              "*": "ask",
+              [path.join(".kilo", "plans", "*.md")]: "allow",
+              [path.join(".opencode", "plans", "*.md")]: "allow",
+              [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+            },
+          }),
+          user,
+        ),
+        prompt: yield* KiloPromptLoader.get("plan", PROMPT_PLAN), // kilocode_change
+      }
     }
-  }
+
+    // Patch explore with codebase_search and conditional prompt
+    if (agents.explore) {
+      agents.explore = {
+        ...agents.explore,
+        permission: Permission.merge(
+          defaults,
+          Permission.fromConfig({
+            "*": "deny",
+            grep: "allow",
+            glob: "allow",
+            list: "allow",
+            bash: "allow",
+            webfetch: "allow",
+            websearch: "allow",
+            codesearch: "allow",
+            codebase_search: "allow",
+            read: "allow",
+            external_directory: {
+              "*": "ask",
+              [Truncate.GLOB]: "allow",
+            },
+          }),
+          user,
+        ),
+        prompt: cfg.experimental?.codebase_search
+          ? `Prefer using the codebase_search tool for codebase searches — it performs intelligent multi-step code search and returns the most relevant code spans.\n\n${yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE)}`
+          : yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE),
+      }
+    }
 
     // Add debug agent
     agents.debug = {

@@ -263,6 +263,10 @@ export namespace ToolRegistry {
       const tools: Interface["tools"] = Effect.fn("ToolRegistry.tools")(function* (input) {
         const e2e = !!(yield* env.get("OPENCODE_E2E_LLM_URL"))
         const filtered = (yield* all()).filter((tool) => {
+          if (Permission.evaluate(tool.id, "*", input.agent.permission).action === "deny") {
+            return false
+          }
+
           if (tool.id === CodeSearchTool.id || tool.id === WebSearchTool.id) {
             return KiloToolRegistry.exa(input.providerID) // kilocode_change
           }

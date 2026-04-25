@@ -455,6 +455,10 @@ NOTE: At any point in time through this workflow you should feel free to ask the
         }
 
         for (const [key, item] of Object.entries(yield* mcp.tools())) {
+          if (Permission.evaluate(key, "*", input.agent.permission).action === "deny") {
+            continue
+          }
+
           const execute = item.execute
           if (!execute) continue
 

@@ -11,6 +11,8 @@ import { Agent } from "../../agent/agent"
 import { Skill } from "../../skill"
 import { Global } from "../../global"
 import { LSP } from "../../lsp"
+import { ToolRegistry } from "../../tool/registry"
+import { MCP } from "../../mcp"
 import { Command } from "../../command"
 import { QuestionRoutes } from "./question"
 import { PermissionRoutes } from "./permission"
@@ -237,6 +239,53 @@ export const InstanceRoutes = (upgrade: UpgradeWebSocket): Hono => {
           }),
         )
         return c.json(skills)
+      },
+    )
+    .get(
+      "/tool",
+      describeRoute({
+        summary: "List tools",
+        description: "Get a list of all available tools in the OpenCode system, including MCP tools.",
+        operationId: "app.tools",
+        responses: {
+          200: {
+            description: "List of tools",
+            content: {
+              "application/json": {
+                schema: resolver(
+                  z.array(
+                    z.object({
+                      id: z.string(),
+                      description: z.string(),
+                    })
+                  )
+                ),
+              },
+            },
+          },
+        },
+      }),
+      async (c) => {
+        const tools = await AppRuntime.runPromise(
+          Effect.gen(function* () {
+            const registry = yield* ToolRegistry.Service
+            const mcp = yield* MCP.Service
+            const builtin = yield* registry.all()
+            const mcpToolsMap = yield* mcp.tools()
+            
+            const results: { id: string; description: string }[] = builtin.map((t) => ({
+              id: t.id,
+              description: t.description,
+            }))
+            
+            for (const [id, tool] of Object.entries(mcpToolsMap)) {
+              results.push({ id, description: tool.description ?? "MCP Tool" })
+            }
+            
+            return results
+          }),
+        )
+        return c.json(tools)
       },
     )
     .get(

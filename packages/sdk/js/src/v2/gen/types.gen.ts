@@ -5726,6 +5726,28 @@ export type AppSkillsResponses = {
 
 export type AppSkillsResponse = AppSkillsResponses[keyof AppSkillsResponses]
 
+export type AppToolsData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/tool"
+}
+
+export type AppToolsResponses = {
+  /**
+   * List of tools
+   */
+  200: Array<{
+    id: string
+    description: string
+  }>
+}
+
+export type AppToolsResponse = AppToolsResponses[keyof AppToolsResponses]
+
 export type LspStatusData = {
   body?: never
   path?: never

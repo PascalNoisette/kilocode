@@ -139,14 +139,15 @@
 }
 
 .settings-tools-matrix-wrap {
-  overflow-x: auto;
+  overflow: visible;
   border: 1px solid var(--border-weak-base);
   border-radius: 4px;
 }
 
 .settings-tools-matrix {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
   min-width: 400px;
 }
@@ -163,17 +164,34 @@
   text-align: left !important;
   position: sticky;
   left: 0;
-  background: var(--vscode-sideBar-background);
-  z-index: 10;
+  background: var(--background-base);
   border-right: 1px solid var(--border-weak-base);
   max-width: 200px;
   overflow: hidden;
 }
 
+.settings-tools-matrix-tool-header {
+  top: 0;
+  z-index: 10;
+}
+
+.settings-tools-matrix-tool-cell {
+  z-index: 1;
+}
+
 .settings-tools-matrix-agent-header {
-  background: var(--vscode-sideBar-background);
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  background: var(--background-base);
   font-weight: 500;
   min-width: 50px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-tools-matrix-agent-header:hover {
+  color: var(--vscode-textLink-foreground);
 }
 
 .settings-tools-matrix-agent-info {

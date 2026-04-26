@@ -62,6 +62,27 @@ export const ToolsTab: Component = () => {
     })
   }
 
+  const isAgentEnabledForAllTools = (agentName: string) => {
+    return tools().every((tool) => isEnabled(agentName, tool.id))
+  }
+
+  const toggleAllToolForAgent = (agentName: string, enabled: boolean) => {
+    const action = enabled ? "allow" : "deny"
+    const toolPermissions: Record<string, any> = {
+      "*": action,
+    }
+    for (const tool of tools()) {
+      toolPermissions[tool.id] = action
+    }
+    updateConfig({
+      agent: {
+        [agentName]: {
+          permission: toolPermissions,
+        },
+      },
+    })
+  }
+
   return (
     <div class="settings-tools-container">
       <div class="settings-tools-header">
@@ -84,7 +105,10 @@ export const ToolsTab: Component = () => {
                 <th class="settings-tools-matrix-tool-header">Tool</th>
                 <For each={agents()}>
                   {(agent) => (
-                    <th class="settings-tools-matrix-agent-header">
+                    <th
+                      class="settings-tools-matrix-agent-header"
+                      onClick={() => toggleAllToolForAgent(agent.name, !isAgentEnabledForAllTools(agent.name))}
+                    >
                       <div class="settings-tools-matrix-agent-info">
                         <Icon name="brain" size="small" style={{ color: agent.color }} />
                         <span>{agent.displayName || agent.name}</span>

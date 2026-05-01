@@ -83,7 +83,7 @@ for (const config of targets) {
 
   console.log(`  📦 Packaging .vsix for ${config.target}${prerelease ? " (pre-release)" : ""}...`)
   const vsixPath = join(outDir, `kilo-vscode-${config.target}.vsix`)
-  const args = ["--no-dependencies", "--skip-license", "--target", config.target, "-o", vsixPath]
+  const args = ["--no-dependencies", "--target", config.target, "-o", vsixPath]
   if (prerelease) args.push("--pre-release")
   await $`vsce package ${args}`.env({
     ...process.env,

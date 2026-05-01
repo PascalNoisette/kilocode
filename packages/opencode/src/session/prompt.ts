@@ -178,6 +178,12 @@ export namespace SessionPrompt {
         if (input.session.parentID) return
         if (!Session.isDefaultTitle(input.session.title)) return
 
+        const titleGenerationEnabled = true; // TODO: disable title generation in config
+        if (titleGenerationEnabled) {
+          yield* sessions.setTitle({ sessionID: input.session.id, title: `Conversation ${new Date().toLocaleString()}` })
+          return
+        }
+
         const real = (m: MessageV2.WithParts) =>
           m.info.role === "user" && !m.parts.every((p) => "synthetic" in p && p.synthetic)
         const idx = input.history.findIndex(real)

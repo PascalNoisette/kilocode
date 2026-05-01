@@ -235,11 +235,7 @@ export function patchAgents(
         permission: Permission.merge(
           defaults,
           Permission.fromConfig({
-            question: "allow",
-            suggest: "allow", // kilocode_change
-            plan_exit: "allow",
             bash: readOnlyBash,
-            ...kilo.mcpRules,
             external_directory: {
               [path.join(Global.Path.data, "plans", "*")]: "allow",
             },
@@ -264,15 +260,6 @@ export function patchAgents(
           defaults,
           Permission.fromConfig({
             "*": "deny",
-            grep: "allow",
-            glob: "allow",
-            list: "allow",
-            bash: "allow",
-            webfetch: "allow",
-            websearch: "allow",
-            codesearch: "allow",
-            codebase_search: "allow",
-            read: "allow",
             external_directory: {
               "*": "ask",
               [Truncate.GLOB]: "allow",
@@ -294,11 +281,6 @@ export function patchAgents(
       options: {},
       permission: Permission.merge(
         defaults,
-        Permission.fromConfig({
-          question: "allow",
-          suggest: "allow", // kilocode_change
-          plan_enter: "allow",
-        }),
         user,
       ),
       mode: "primary",
@@ -315,19 +297,6 @@ export function patchAgents(
         defaults,
         Permission.fromConfig({
           "*": "deny",
-          read: "allow",
-          grep: "allow",
-          glob: "allow",
-          list: "allow",
-          question: "allow",
-          suggest: "allow", // kilocode_change
-          task: "allow",
-          todoread: "allow",
-          todowrite: "allow",
-          webfetch: "allow",
-          websearch: "allow",
-          codesearch: "allow",
-          codebase_search: "allow",
           external_directory: {
             [Truncate.GLOB]: "allow",
           },
@@ -361,18 +330,9 @@ export function patchAgents(
             "*.env.*": "ask",
             "*.env.example": "allow",
           },
-          grep: "allow",
-          glob: "allow",
-          list: "allow",
-          question: "allow",
-          webfetch: "allow",
-          websearch: "allow",
-          codesearch: "allow",
-          codebase_search: "allow",
           external_directory: {
             [Truncate.GLOB]: "allow",
           },
-          ...kilo.mcpRules,
         }),
         user.filter((r: Permission.Rule) => r.action === "deny"), // re-apply user denies so explicit MCP blocks win over mcpRules
       ),

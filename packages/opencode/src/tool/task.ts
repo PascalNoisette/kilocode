@@ -9,6 +9,8 @@ import type { SessionPrompt } from "../session/prompt"
 import { Config } from "../config/config"
 import { Effect } from "effect"
 import { KiloTask } from "../kilocode/tool/task" // kilocode_change
+import { Permission } from "@/permission"
+import * as KiloAgent from "@/kilocode/agent" // kilocode_change
 
 export interface TaskPromptOps {
   cancel(sessionID: SessionID): void
@@ -61,14 +63,19 @@ export const TaskTool = Tool.define(
       KiloTask.validate(next, params.subagent_type)
       // kilocode_change end
 
-      const canTask = next.permission.some((rule) => rule.permission === id)
-      const canTodo = next.permission.some((rule) => rule.permission === "todowrite")
-
-      // kilocode_change start — inherit edit/bash/MCP restrictions from calling agent
-      const caller = yield* agent.get(ctx.agent)
-      const parent = yield* Effect.promise(() => Session.get(SessionID.make(ctx.sessionID)))
-      const rules = KiloTask.inherited({ caller, session: parent, mcp: cfg.mcp })
-      // kilocode_change end
+      const baseDefaults = Permission.fromConfig({
+            // kilocode_change: renamed from defaults
+            "*": "allow",
+            doom_loop: "ask",
+            // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
+            read: {
+              "*": "allow",
+              "*.env": "ask",
+              "*.env.*": "ask",
+              "*.env.example": "allow",
+            },
+          })
+      const rules = KiloAgent.preprocessConfig(cfg.agent ?? {})[next.name].permission;
 
       const taskID = params.task_id
       const session = taskID
@@ -79,34 +86,7 @@ export const TaskTool = Tool.define(
         (yield* sessions.create({
           parentID: ctx.sessionID,
           title: params.description + ` (@${next.name} subagent)`,
-          permission: [
-            ...(canTodo
-              ? []
-              : [
-                  {
-                    permission: "todowrite" as const,
-                    pattern: "*" as const,
-                    action: "deny" as const,
-                  },
-                ]),
-            ...(canTask
-              ? []
-              : [
-                  {
-                    permission: id,
-                    pattern: "*" as const,
-                    action: "deny" as const,
-                  },
-                ]),
-            ...(cfg.experimental?.primary_tools?.map((item) => ({
-              pattern: "*",
-              action: "allow" as const,
-              permission: item,
-            })) ?? []),
-            // kilocode_change start — deny task + propagate caller restrictions
-            ...KiloTask.permissions(rules),
-            // kilocode_change end
-          ],
+          permission: Permission.merge(baseDefaults, Permission.fromConfig(rules ?? {}))
         }))
 
       const msg = yield* Effect.sync(() => MessageV2.get({ sessionID: ctx.sessionID, messageID: ctx.messageID }))
@@ -149,11 +129,10 @@ export const TaskTool = Tool.define(
                 providerID: model.providerID,
               },
               agent: next.name,
-              tools: {
-                ...(canTodo ? {} : { todowrite: false }),
-                ...(canTask ? {} : { task: false }),
-                ...Object.fromEntries((cfg.experimental?.primary_tools ?? []).map((item) => [item, false])),
-              },
+              tools: Object.fromEntries(next.permission.map(({
+                  permission,
+                  action
+              }) => [permission, action == "allow"])),
               parts,
             })
 

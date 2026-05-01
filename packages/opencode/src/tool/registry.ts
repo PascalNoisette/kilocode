@@ -248,7 +248,7 @@ export namespace ToolRegistry {
       const describeTask = Effect.fn("ToolRegistry.describeTask")(function* (agent: Agent.Info) {
         const items = (yield* agents.list()).filter((item) => item.mode !== "primary")
         const filtered = items.filter(
-          (item) => Permission.evaluate("task", item.name, agent.permission).action !== "deny",
+          (item) => Permission.evaluate("task", item.name, agent.permission).action === "allow",
         )
         const list = filtered.toSorted((a, b) => a.name.localeCompare(b.name))
         const description = list
@@ -263,7 +263,7 @@ export namespace ToolRegistry {
       const tools: Interface["tools"] = Effect.fn("ToolRegistry.tools")(function* (input) {
         const e2e = !!(yield* env.get("OPENCODE_E2E_LLM_URL"))
         const filtered = (yield* all()).filter((tool) => {
-          if (Permission.evaluate(tool.id, "*", input.agent.permission).action === "deny") {
+          if (Permission.evaluate(tool.id, "*", input.agent.permission).action !== "allow") {
             return false
           }
 

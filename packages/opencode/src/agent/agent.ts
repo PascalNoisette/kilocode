@@ -105,10 +105,6 @@ export namespace Agent {
               "*": "ask",
               ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
             },
-            suggest: "deny", // kilocode_change
-            question: "deny",
-            plan_enter: "deny",
-            plan_exit: "deny",
             // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
             read: {
               "*": "allow",
@@ -130,15 +126,7 @@ export namespace Agent {
               name: "build",
               description: "The default agent. Executes tools based on configured permissions.",
               options: {},
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  question: "allow",
-                  suggest: "allow", // kilocode_change
-                  plan_enter: "allow",
-                }),
-                user,
-              ),
+              permission: [],
               mode: "primary",
               native: true,
             },
@@ -146,23 +134,7 @@ export namespace Agent {
               name: "plan",
               description: "Plan mode. Disallows all edit tools.",
               options: {},
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  question: "allow",
-                  plan_exit: "allow",
-                  external_directory: {
-                    [path.join(Global.Path.data, "plans", "*")]: "allow",
-                  },
-                  edit: {
-                    "*": "deny",
-                    [path.join(".opencode", "plans", "*.md")]: "allow",
-                    [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]:
-                      "allow",
-                  },
-                }),
-                user,
-              ),
+              permission: [],
               mode: "primary",
               native: true,
               prompt: yield* KiloPromptLoader.get("plan", PROMPT_PLAN), // kilocode_change
@@ -170,88 +142,46 @@ export namespace Agent {
             general: {
               name: "general",
               description: `General-purpose agent for researching complex questions and executing multi-step tasks. Use this agent to execute multiple units of work in parallel.`,
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  todowrite: "deny",
-                }),
-                user,
-              ),
               options: {},
+              permission: [],
               mode: "subagent",
               native: true,
             },
             explore: {
               name: "explore",
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  "*": "deny",
-                  grep: "allow",
-                  glob: "allow",
-                  list: "allow",
-                  bash: "allow",
-                  webfetch: "allow",
-                  websearch: "allow",
-                  codesearch: "allow",
-                  read: "allow",
-                  external_directory: {
-                    "*": "ask",
-                    ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
-                  },
-                }),
-                user,
-              ),
               description: `Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.`,
               prompt: yield* KiloPromptLoader.get("explore", PROMPT_EXPLORE), // kilocode_change
               options: {},
+              permission: [],
               mode: "subagent",
               native: true,
             },
             compaction: {
               name: "compaction",
               mode: "primary",
+              options: {},
+              permission: [],
               native: true,
               hidden: true,
               prompt: yield* KiloPromptLoader.get("compaction", PROMPT_COMPACTION), // kilocode_change
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  "*": "deny",
-                }),
-                user,
-              ),
-              options: {},
             },
             title: {
               name: "title",
               mode: "primary",
               options: {},
+              permission: [],
               native: true,
               hidden: true,
               temperature: 0.5,
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  "*": "deny",
-                }),
-                user,
-              ),
               prompt: yield* KiloPromptLoader.get("title", PROMPT_TITLE), // kilocode_change
             },
             summary: {
               name: "summary",
               mode: "primary",
               options: {},
+              permission: [],
               native: true,
               hidden: true,
-              permission: Permission.merge(
-                defaults,
-                Permission.fromConfig({
-                  "*": "deny",
-                }),
-                user,
-              ),
               prompt: yield* KiloPromptLoader.get("summary", PROMPT_SUMMARY), // kilocode_change
             },
           }
@@ -273,7 +203,7 @@ export namespace Agent {
               item = agents[key] = {
                 name: key,
                 mode: "all",
-                permission: Permission.merge(defaults, user),
+                permission: [],
                 options: {},
                 native: false,
               }
@@ -289,7 +219,7 @@ export namespace Agent {
             item.name = value.name ?? item.name
             item.steps = value.steps ?? item.steps
             item.options = mergeDeep(item.options, value.options ?? {})
-            item.permission = Permission.merge(item.permission, Permission.fromConfig(value.permission ?? {}))
+            item.permission = Permission.merge(defaults, Permission.fromConfig(value.permission ?? {}))
             KiloAgent.processConfigItem(item) // kilocode_change - populate displayName from options
           }
 

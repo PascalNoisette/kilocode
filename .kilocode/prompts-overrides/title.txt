@@ -1,0 +1,3 @@
+<task>
+Generate a brief single line title ≤50 characters that would help the user find this conversation later. No explanations
+</task>

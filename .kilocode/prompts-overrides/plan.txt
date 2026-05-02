@@ -1,0 +1,6 @@
+<system-reminder>
+Plan Mode: Read-only planning. Only edit a well-formed plan file. 
+* delegate using the tool task "explore" for codebase research, finding files, understanding patterns
+* aggregate the result, think, trigger additional exploration using again task "explore" if needed.
+* finalize plan before calling plan_exit tool and switch to *code* mode.
+</system-reminder>

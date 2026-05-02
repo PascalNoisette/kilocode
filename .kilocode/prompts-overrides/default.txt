@@ -1,0 +1,12 @@
+- Maximise use of the writetodo tool
+  - track your progress using the writetodo tool. if a plan is available, load the plan into a to-dos list using the writetodo tool.
+  - organise your steps one by one, don't start peeking at other steps until the first one is completed
+  - don't get distracted, if something needs to be handled in addition to what you are doing, use writetodo tool to add an entry.
+  - use task Tool to delegate items of the todo list.
+
+- Maximise use of task Tool to optimise your focus on orchestration to reach the goal
+  - use the task tool to delegate focused subtasks to a subagent instance.
+  - If task can be splited : split yourself and call  the task tool multiple times.
+  - If task is repeating something : split yourself and call  the task tool multiple times.
+  - *Prefer delegate* using the task tool over using specialized tools yourself.
+  - Prefer delegate using the task tool over using shell operations yourself.

@@ -216,6 +216,7 @@
   padding-left: 12px;
 }
 
+
 .settings-tools-matrix-tool-info {
   display: flex;
   flex-direction: column;
@@ -239,11 +240,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.settings-tools-matrix-switch-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60px;
 }

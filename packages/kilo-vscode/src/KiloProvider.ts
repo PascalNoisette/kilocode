@@ -1328,11 +1328,12 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       await this.flushPendingSessionRefresh("initializeConnection")
       this.recoverPendingPrompts()
 
-      // Fetch providers, agents, skills, config, notifications, and session statuses in parallel
+      // Fetch providers, agents, skills, tools, config, notifications, and session statuses in parallel
       await Promise.all([
         this.fetchAndSendProviders(),
         this.fetchAndSendAgents(),
         this.fetchAndSendSkills(),
+        this.fetchAndSendTools(),
         this.fetchAndSendCommands(),
         this.fetchAndSendConfig(),
         this.fetchAndSendIndexingStatus(),
@@ -1906,9 +1907,10 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
     try {
       const cfg = this.connectionService.getServerConfig()
       if (!cfg) return
-      const url = `${cfg.baseUrl}/instance/tool`
-      const res = await retry(() => fetch(url, { headers: { Authorization: `Basic ${btoa(cfg.password)}` } }))
-      const tools = (await res.json()) as Array<{ id: string; description: string }>
+      const dir = this.getWorkspaceDirectory()
+      const { data: tools } = await retry(() =>
+        this.client!.app.tools({ directory: dir }, { throwOnError: true }),
+      )
       const message = {
         type: "toolsLoaded",
         tools,
@@ -1969,20 +1971,23 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       if (result.error) {
         console.error("[Kilo New] removeSkill returned error:", result.error)
         this.cachedSkillsMessage = null
+        this.cachedToolsMessage = null
         this.clearCommandsCache()
-        await Promise.all([this.fetchAndSendSkills(), this.fetchAndSendCommands()])
+        await Promise.all([this.fetchAndSendSkills(), this.fetchAndSendTools(), this.fetchAndSendCommands()])
         return false
       }
     } catch (error) {
       console.error("[Kilo New] Failed to remove skill:", error)
       this.cachedSkillsMessage = null
+      this.cachedToolsMessage = null
       this.cachedCommandsMessage = null
-      await Promise.all([this.fetchAndSendSkills(), this.fetchAndSendCommands()])
+      await Promise.all([this.fetchAndSendSkills(), this.fetchAndSendTools(), this.fetchAndSendCommands()])
       return false
     }
     this.cachedSkillsMessage = null
+    this.cachedToolsMessage = null
     this.cachedCommandsMessage = null
-    await Promise.all([this.fetchAndSendSkills(), this.fetchAndSendCommands()])
+    await Promise.all([this.fetchAndSendSkills(), this.fetchAndSendTools(), this.fetchAndSendCommands()])
     return true
   }
 
@@ -3061,6 +3066,7 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       this.fetchAndSendProviders(),
       this.fetchAndSendAgents(),
       this.fetchAndSendSkills(),
+      this.fetchAndSendTools(),
       this.fetchAndSendCommands(),
       this.fetchAndSendIndexingStatus(),
       this.fetchAndSendNotifications(),

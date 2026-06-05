@@ -2,7 +2,6 @@ import { Component, For, onMount, Show } from "solid-js"
 import { useSession } from "../../context/session"
 import { useConfig } from "../../context/config"
 import { useLanguage } from "../../context/language"
-import { Checkbox } from "@kilocode/kilo-ui/checkbox"
 
 export const ToolsTab: Component = () => {
   const { tools, refreshTools, allAgents } = useSession()
@@ -125,9 +124,10 @@ export const ToolsTab: Component = () => {
                     <For each={agents()}>
                       {(agent) => (
                         <td class="settings-tools-matrix-checkbox-cell">
-                          <Checkbox
+                          <input
+                            type="checkbox"
                             checked={isEnabled(agent.name, tool.id)}
-                            onChange={(val) => togglePermission(agent.name, tool.id, val)}
+                            onChange={(e) => togglePermission(agent.name, tool.id, e.target.checked)}
                           />
                         </td>
                       )}

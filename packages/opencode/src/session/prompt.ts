@@ -1541,7 +1541,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
           KiloSessionPrompt.shouldAskPlanFollowup({ messages: msgs, abort: AbortSignal.any([]) })
         ) {
           const action = yield* Effect.promise((signal) =>
-            KiloSessionPrompt.askPlanFollowup({ sessionID, messages: msgs, abort: signal }),
+            KiloSessionPrompt.askPlanFollowup({ sessionID, messages: msgs, abort: signal, question }),
           )
           if (action === "continue") continue
           yield* slog.info("exiting loop")
@@ -1558,7 +1558,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
         ) {
           // kilocode_change start - ask follow-up when plan_exit tool was called
           const action = yield* Effect.promise((signal) =>
-            KiloSessionPrompt.askPlanFollowup({ sessionID, messages: msgs, abort: signal }),
+            KiloSessionPrompt.askPlanFollowup({ sessionID, messages: msgs, abort: signal, question }),
           )
           if (action === "continue") continue
           // kilocode_change end

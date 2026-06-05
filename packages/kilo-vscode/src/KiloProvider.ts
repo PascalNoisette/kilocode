@@ -186,6 +186,8 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
   private cachedSkillsMessage: unknown = null
   /** Cached commandsLoaded payload so requestCommands can be served before client is ready */
   private cachedCommandsMessage: unknown = null
+  /** Cached toolsLoaded payload so requestTools can be served before client is ready */
+  private cachedToolsMessage: unknown = null
   /** Cached configLoaded payload so requestConfig can be served before client is ready */
   private cachedConfigMessage: unknown = null
   private cachedGlobalConfig: Config | null = null
@@ -833,6 +835,9 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
           break
         case "requestSkills":
           this.fetchAndSendSkills().catch((e) => console.error("[Kilo New] fetchAndSendSkills failed:", e))
+          break
+        case "requestTools":
+          this.fetchAndSendTools().catch((e) => console.error("[Kilo New] fetchAndSendTools failed:", e))
           break
         case "requestCommands":
           this.fetchAndSendCommands().catch((e) => console.error("[Kilo New] fetchAndSendCommands failed:", e))
@@ -1887,6 +1892,31 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       this.postMessage(message)
     } catch (error) {
       console.error("[Kilo New] KiloProvider: Failed to fetch skills:", error)
+    }
+  }
+
+  private async fetchAndSendTools(): Promise<void> {
+    if (!this.client) {
+      if (this.cachedToolsMessage) {
+        this.postMessage(this.cachedToolsMessage)
+      }
+      return
+    }
+
+    try {
+      const cfg = this.connectionService.getServerConfig()
+      if (!cfg) return
+      const url = `${cfg.baseUrl}/instance/tool`
+      const res = await retry(() => fetch(url, { headers: { Authorization: `Basic ${btoa(cfg.password)}` } }))
+      const tools = (await res.json()) as Array<{ id: string; description: string }>
+      const message = {
+        type: "toolsLoaded",
+        tools,
+      }
+      this.cachedToolsMessage = message
+      this.postMessage(message)
+    } catch (error) {
+      console.error("[Kilo New] KiloProvider: Failed to fetch tools:", error)
     }
   }
 

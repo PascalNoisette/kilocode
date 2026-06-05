@@ -11,6 +11,7 @@ import ModelsTab from "./ModelsTab"
 import ProvidersTab from "./ProvidersTab"
 import AgentBehaviourTab from "./AgentBehaviourTab"
 import AutoApproveTab from "./AutoApproveTab"
+import { ToolsTab } from "./ToolsTab"
 import BrowserTab from "./BrowserTab"
 import CheckpointsTab from "./CheckpointsTab"
 import DisplayTab from "./DisplayTab"
@@ -161,6 +162,10 @@ const Settings: Component<SettingsProps> = (props) => {
             <Icon name="checklist" />
             <span class="label">{language.t("settings.autoApprove.title")}</span>
           </Tabs.Trigger>
+          <Tabs.Trigger value="tools">
+            <Icon name="sliders" />
+            <span class="label">{language.t("settings.tools.title")}</span>
+          </Tabs.Trigger>
           <Tabs.Trigger value="browser">
             <Icon name="window-cursor" />
             <span class="label">{language.t("settings.browser.title")}</span>
@@ -225,6 +230,10 @@ const Settings: Component<SettingsProps> = (props) => {
         <Tabs.Content value="autoApprove">
           <h3>{language.t("settings.autoApprove.title")}</h3>
           <AutoApproveTab />
+        </Tabs.Content>
+        <Tabs.Content value="tools">
+          <h3>{language.t("settings.tools.title")}</h3>
+          <ToolsTab />
         </Tabs.Content>
         <Tabs.Content value="browser">
           <h3>{language.t("settings.browser.title")}</h3>

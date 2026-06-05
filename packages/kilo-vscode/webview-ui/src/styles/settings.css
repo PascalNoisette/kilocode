@@ -134,3 +134,116 @@
     text-align: right;
   }
 }
+
+/* Tools matrix */
+.settings-tools-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.settings-tools-description {
+  font-size: var(--font-size-small);
+  color: var(--text-weak-base, var(--vscode-descriptionForeground));
+  margin: 0 0 8px 0;
+}
+
+.settings-tools-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  justify-content: center;
+  color: var(--text-weak-base, var(--vscode-descriptionForeground));
+  font-size: var(--font-size-small);
+}
+
+.settings-tools-matrix-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.settings-tools-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-weak-base);
+  }
+
+  th {
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--text-weak-base, var(--vscode-descriptionForeground));
+    position: sticky;
+    top: 0;
+    background: var(--vscode-editor-background);
+    z-index: 1;
+  }
+}
+
+.settings-tools-matrix-tool-header {
+  width: 35%;
+  min-width: 200px;
+}
+
+.settings-tools-matrix-agent-header {
+  text-align: center;
+
+  .settings-tools-matrix-agent-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+}
+
+.settings-tools-matrix-row {
+  &:hover {
+    background: var(--vscode-list-hoverBackground, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.settings-tools-matrix-tool-cell {
+  padding-left: 12px;
+}
+
+.settings-tools-matrix-tool-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-tools-matrix-tool-id {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--foreground-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-tools-matrix-tool-description {
+  font-size: var(--font-size-xs);
+  color: var(--text-weak-base, var(--vscode-descriptionForeground));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-tools-matrix-switch-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+}

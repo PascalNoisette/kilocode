@@ -224,6 +224,10 @@ export interface RequestSkillsMessage {
   type: "requestSkills"
 }
 
+export interface RequestToolsMessage {
+  type: "requestTools"
+}
+
 export interface RequestCommandsMessage {
   type: "requestCommands"
 }
@@ -1095,6 +1099,7 @@ export type WebviewMessage =
   | CompactRequest
   | RequestAgentsMessage
   | RequestSkillsMessage
+  | RequestToolsMessage
   | RequestCommandsMessage
   | SendCommandRequest
   | RemoveSkillMessage

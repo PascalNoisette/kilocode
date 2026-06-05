@@ -29,6 +29,7 @@ import type {
   ContextUsage,
   AgentInfo,
   SkillInfo,
+  ToolInfo,
   ExtensionMessage,
   FileAttachment,
   SendMessageFailedMessage,
@@ -183,6 +184,10 @@ interface SessionContextValue {
   skills: Accessor<SkillInfo[]>
   refreshSkills: () => void
   removeSkill: (location: string) => void
+
+  // Tools loaded from the CLI backend
+  tools: Accessor<ToolInfo[]>
+  refreshTools: () => void
 
   // Agent/mode selection (per-session)
   agents: Accessor<AgentInfo[]>
@@ -348,6 +353,9 @@ export const SessionProvider: ParentComponent = (props) => {
 
   // Skills loaded from the CLI backend
   const [skills, setSkills] = createSignal<SkillInfo[]>([])
+
+  // Tools loaded from the CLI backend
+  const [tools, setTools] = createSignal<ToolInfo[]>([])
 
   const removeAgent = (name: string) => {
     setAgents((prev) => prev.filter((a) => a.name !== name))
@@ -662,6 +670,17 @@ export const SessionProvider: ParentComponent = (props) => {
     vscode.postMessage({ type: "requestSkills" })
   }
 
+  // Tools loaded from the CLI backend
+  const unsubTools = vscode.onMessage((message: ExtensionMessage) => {
+    if (message.type === "toolsLoaded") {
+      setTools(message.tools)
+    }
+  })
+
+  const refreshTools = () => {
+    vscode.postMessage({ type: "requestTools" })
+  }
+
   const removeSkill = (location: string) => {
     setSkills((prev) => prev.filter((s) => s.location !== location))
     vscode.postMessage({ type: "removeSkill", location })
@@ -712,6 +731,7 @@ export const SessionProvider: ParentComponent = (props) => {
   onCleanup(() => {
     unsubAgents()
     unsubSkills()
+    unsubTools()
     unsubMcpStatus()
     unsubReady()
     clearTimeout(fallback)
@@ -2489,6 +2509,8 @@ export const SessionProvider: ParentComponent = (props) => {
     skills,
     refreshSkills,
     removeSkill,
+    tools,
+    refreshTools,
     removeAgent,
     removeMcp,
     mcpStatus,

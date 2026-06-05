@@ -9,7 +9,7 @@ import type { CloudSessionInfo, Message, MessageLoadMode, SessionCloseReason, Se
 import type { PermissionRequest } from "./permissions"
 import type { QuestionRequest, SuggestionRequest, TodoItem } from "./questions"
 import type { ModelSelection, Provider, ProviderAuthState } from "./providers"
-import type { AgentInfo, SkillInfo, SlashCommandInfo } from "./agents"
+import type { AgentInfo, SkillInfo, SlashCommandInfo, ToolInfo } from "./agents"
 import type { BrowserSettings, Config, FeatureFlags, IndexingStatus, KiloEmbeddingModelCatalog } from "./config"
 import type { KilocodeNotification, ProfileData } from "./profile"
 import type {
@@ -323,6 +323,11 @@ export interface AgentsLoadedMessage {
 export interface SkillsLoadedMessage {
   type: "skillsLoaded"
   skills: SkillInfo[]
+}
+
+export interface ToolsLoadedMessage {
+  type: "toolsLoaded"
+  tools: ToolInfo[]
 }
 
 export interface CommandsLoadedMessage {
@@ -962,6 +967,7 @@ export type ExtensionMessage =
   | ProvidersLoadedMessage
   | AgentsLoadedMessage
   | SkillsLoadedMessage
+  | ToolsLoadedMessage
   | CommandsLoadedMessage
   | AutocompleteSettingsLoadedMessage
   | ChatCompletionResultMessage

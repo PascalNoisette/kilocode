@@ -7,6 +7,12 @@ export interface SkillInfo {
   location: string
 }
 
+// Tool info from CLI backend
+export interface ToolInfo {
+  id: string
+  description: string
+}
+
 // Slash command info from CLI backend
 export interface SlashCommandInfo {
   name: string

@@ -485,7 +485,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
 
       for (const [key, item] of Object.entries(yield* mcp.tools())) {
         // kilocode_change start
-        if (Permission.evaluate(key, "*", input.agent.permission).action === "deny") {
+        if (Permission.evaluate(key, "*", input.agent.permission).action !== "allow") {
           continue
         }
         // kilocode_change end

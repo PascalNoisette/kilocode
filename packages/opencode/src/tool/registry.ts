@@ -308,7 +308,7 @@ export const layer: Layer.Layer<
     const describeTask = Effect.fn("ToolRegistry.describeTask")(function* (agent: Agent.Info) {
       const items = (yield* agents.list()).filter((item) => item.mode !== "primary")
       const filtered = items.filter(
-        (item) => Permission.evaluate("task", item.name, agent.permission).action !== "deny",
+        (item) => Permission.evaluate("task", item.name, agent.permission).action === "allow",
       )
       const list = filtered.toSorted((a, b) => a.name.localeCompare(b.name))
       const description = list
@@ -323,7 +323,7 @@ export const layer: Layer.Layer<
     const tools: Interface["tools"] = Effect.fn("ToolRegistry.tools")(function* (input) {
       const filtered = (yield* all()).filter((tool) => {
         // kilocode_change start
-        if (Permission.evaluate(tool.id, "*", input.agent.permission).action === "deny") {
+        if (Permission.evaluate(tool.id, "*", input.agent.permission).action !== "allow") {
           return false
         }
         // kilocode_change end

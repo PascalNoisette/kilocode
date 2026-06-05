@@ -14,6 +14,7 @@ import { KiloSessionProcessor } from "../kilocode/session/processor" // kilocode
 import { errorMessage } from "@/util/error" // kilocode_change
 import { Effect, Exit, Schema } from "effect"
 import { EffectBridge } from "@/effect/bridge"
+import { Permission } from "@/permission"
 
 export interface TaskPromptOps {
   cancel(sessionID: SessionID): Effect.Effect<void>
@@ -67,9 +68,6 @@ export const TaskTool = Tool.define(
       // kilocode_change start — reject primary agents; only subagent/all modes allowed
       KiloTask.validate(next, params.subagent_type)
       // kilocode_change end
-
-      const canTask = KiloTask.nestedTask() // kilocode_change - Kilo disallows subagents spawning subagents
-      const canTodo = next.permission.some((rule) => rule.permission === "todowrite")
 
       const taskID = params.task_id
       const session = taskID
@@ -180,11 +178,9 @@ export const TaskTool = Tool.define(
               },
               variant, // kilocode_change
               agent: next.name,
-              tools: {
-                ...(canTodo ? {} : { todowrite: false }),
-                ...(canTask ? {} : { task: false }),
-                ...Object.fromEntries((cfg.experimental?.primary_tools ?? []).map((item) => [item, false])),
-              },
+              tools: Object.fromEntries(
+                next.permission.map((r: Permission.Rule) => [r.permission, r.action == "allow"]),
+              ),
               parts,
             })
 

@@ -1,6 +1,5 @@
 import path from "path"
 import os from "os"
-import fs from "fs/promises"
 import { KiloSessionPrompt } from "@/kilocode/session/prompt" // kilocode_change
 import { KiloSessionMessageOrder } from "@/kilocode/session/message-order" // kilocode_change
 import { KiloSessionPromptQueue } from "@/kilocode/session/prompt-queue" // kilocode_change
@@ -28,7 +27,6 @@ import { Instruction } from "./instruction"
 import { Plugin } from "../plugin"
 import CODE_SWITCH from "../session/prompt/code-switch.txt"
 import MAX_STEPS from "../session/prompt/max-steps.txt"
-import PROMPT_TITLE_SPARE from "../agent/prompt/title-spare.txt" // kilocode_change
 import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 import { ToolRegistry } from "@/tool/registry"
 import { MCP } from "../mcp"
@@ -215,31 +213,17 @@ export const layer = Layer.effect(
         ? yield* provider.getModel(ag.model.providerID, ag.model.modelID)
         : ((yield* provider.getSmallModel(input.providerID)) ??
           (yield* provider.getModel(input.providerID, input.modelID)))
-      // kilocode_change start - use spare prompt for cheaper title generation
-      const spare = yield* KiloPromptLoader.get("title-spare", PROMPT_TITLE_SPARE, fsys)
-      const spareAg = { ...ag, prompt: spare }
-      // kilocode_change end
       const msgs = onlySubtasks
         ? [{ role: "user" as const, content: subtasks.map((p) => p.prompt).join("\n") }]
         : yield* MessageV2.toModelMessagesEffect(context, mdl)
-      const text = yield* llm
-        .stream({
-          agent: spareAg,
-          user: firstInfo,
-          system: [],
-          small: true,
-          tools: {},
-          model: mdl,
-          sessionID: input.session.id,
-          retries: 2,
-          messages: [{ role: "user", content: "Generate a title for this conversation:\n" }, ...msgs],
-        })
-        .pipe(
-          Stream.filter((e): e is Extract<LLM.Event, { type: "text-delta" }> => e.type === "text-delta"),
-          Stream.map((e) => e.text),
-          Stream.mkString,
-          Effect.orDie,
-        )
+        let text =  `Conversation ${new Date().toLocaleString()}`;
+        if (typeof(msgs[0].content) === "string") {
+           text = msgs[0].content;
+        } else if (Array.isArray(msgs[0].content)) {
+          const raw=  msgs[0].content[0] as MessageV2.TextPart;
+          text = raw.text
+        }
+
       const cleaned = text
         .replace(/<think>[\s\S]*?<\/think>\s*/g, "")
         .split("\n")

@@ -28,6 +28,7 @@ import { Instruction } from "./instruction"
 import { Plugin } from "../plugin"
 import CODE_SWITCH from "../session/prompt/code-switch.txt"
 import MAX_STEPS from "../session/prompt/max-steps.txt"
+import PROMPT_TITLE_SPARE from "../agent/prompt/title-spare.txt" // kilocode_change
 import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 import { ToolRegistry } from "@/tool/registry"
 import { MCP } from "../mcp"
@@ -214,12 +215,16 @@ export const layer = Layer.effect(
         ? yield* provider.getModel(ag.model.providerID, ag.model.modelID)
         : ((yield* provider.getSmallModel(input.providerID)) ??
           (yield* provider.getModel(input.providerID, input.modelID)))
+      // kilocode_change start - use spare prompt for cheaper title generation
+      const spare = yield* KiloPromptLoader.get("title-spare", PROMPT_TITLE_SPARE, fsys)
+      const spareAg = { ...ag, prompt: spare }
+      // kilocode_change end
       const msgs = onlySubtasks
         ? [{ role: "user" as const, content: subtasks.map((p) => p.prompt).join("\n") }]
         : yield* MessageV2.toModelMessagesEffect(context, mdl)
       const text = yield* llm
         .stream({
-          agent: ag,
+          agent: spareAg,
           user: firstInfo,
           system: [],
           small: true,

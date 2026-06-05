@@ -176,6 +176,7 @@ export const layer = Layer.effect(
           general: {
             name: "general",
             description: `General-purpose agent for researching complex questions and executing multi-step tasks. Use this agent to execute multiple units of work in parallel.`,
+            prompt: KiloPromptLoader.getSync("general", ""), // kilocode_change
             permission: Permission.merge(
               defaults,
               Permission.fromConfig({

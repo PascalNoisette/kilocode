@@ -170,24 +170,24 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+}
 
-  th,
-  td {
-    padding: 8px;
-    text-align: left;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--border-weak-base);
-  }
+.settings-tools-matrix th,
+.settings-tools-matrix td {
+  padding: 2px 2px;
+  border-bottom: 1px solid var(--border-weak-base);
+  text-align: center;
+  vertical-align: middle;
+}
 
-  th {
-    font-size: var(--font-size-small);
-    font-weight: 600;
-    color: var(--text-weak-base, var(--vscode-descriptionForeground));
-    position: sticky;
-    top: 0;
-    background: var(--vscode-editor-background);
-    z-index: 1;
-  }
+.settings-tools-matrix th {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: var(--text-weak-base, var(--vscode-descriptionForeground));
+  position: sticky;
+  top: 0;
+  background: var(--vscode-editor-background);
+  z-index: 1;
 }
 
 .settings-tools-matrix-tool-header {
@@ -212,16 +212,27 @@
   }
 }
 
-.settings-tools-matrix-tool-cell {
-  padding-left: 12px;
+.settings-tools-matrix-master-checkbox {
+  margin: 0 !important;
+  width: 100%;
 }
 
+.settings-tools-matrix-master-checkbox [data-slot="checkbox-checkbox-control"] {
+  display: none;
+}
 
-.settings-tools-matrix-tool-info {
+.settings-tools-matrix-master-checkbox [data-slot="checkbox-checkbox-label"] {
+  padding-inline-start: 0;
+  margin-inline-end: 0;
+  width: 100%;
+}
+
+.settings-tools-matrix-tool-details {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  cursor: pointer;
 }
 
 .settings-tools-matrix-tool-id {
@@ -240,4 +251,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.settings-tools-matrix-master-checkbox:hover .settings-tools-matrix-tool-id {
+  color: var(--vscode-textLink-foreground);
+}
+
+.settings-tools-matrix-checkbox-cell {
+  vertical-align: middle;
+}
+
+.settings-tools-matrix-checkbox-cell > * {
+  display: inline-flex;
+  justify-content: center;
 }

@@ -2,7 +2,7 @@ import { Component, For, onMount, Show } from "solid-js"
 import { useSession } from "../../context/session"
 import { useConfig } from "../../context/config"
 import { useLanguage } from "../../context/language"
-import { Switch } from "@kilocode/kilo-ui/switch"
+import { Checkbox } from "@kilocode/kilo-ui/checkbox"
 
 export const ToolsTab: Component = () => {
   const { tools, refreshTools, allAgents } = useSession()
@@ -34,6 +34,25 @@ export const ToolsTab: Component = () => {
           },
         },
       },
+    })
+  }
+
+  const isToolEnabledForAllAgents = (toolId: string) => {
+    return agents().every((a) => isEnabled(a.name, toolId))
+  }
+
+  const toggleAllAgentsForTool = (toolId: string, enabled: boolean) => {
+    const action = enabled ? "allow" : "deny"
+    const agentCfg: Record<string, any> = {}
+    for (const a of agents()) {
+      agentCfg[a.name] = {
+        permission: {
+          [toolId]: action,
+        },
+      }
+    }
+    updateConfig({
+      agent: agentCfg,
     })
   }
 
@@ -71,7 +90,10 @@ export const ToolsTab: Component = () => {
                 {(tool) => (
                   <tr class="settings-tools-matrix-row">
                     <td class="settings-tools-matrix-tool-cell">
-                      <div class="settings-tools-matrix-tool-info">
+                      <div
+                        class="settings-tools-matrix-tool-details"
+                        onClick={() => toggleAllAgentsForTool(tool.id, !isToolEnabledForAllAgents(tool.id))}
+                      >
                         <span class="settings-tools-matrix-tool-id">{tool.id}</span>
                         <span class="settings-tools-matrix-tool-description" title={tool.description}>
                           {tool.description}
@@ -80,11 +102,10 @@ export const ToolsTab: Component = () => {
                     </td>
                     <For each={agents()}>
                       {(agent) => (
-                        <td class="settings-tools-matrix-switch-cell">
-                          <Switch
+                        <td class="settings-tools-matrix-checkbox-cell">
+                          <Checkbox
                             checked={isEnabled(agent.name, tool.id)}
                             onChange={(val) => togglePermission(agent.name, tool.id, val)}
-                            hideLabel
                           />
                         </td>
                       )}

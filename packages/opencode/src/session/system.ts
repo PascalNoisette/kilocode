@@ -23,15 +23,16 @@ import SOUL from "../kilocode/soul.txt"
 import type { EditorContext } from "../kilocode/editor-context"
 import { KilocodeSystemPrompt } from "../kilocode/system-prompt"
 import { isLing } from "../kilocode/model-match"
+import { KiloPromptLoader } from "../kilocode/prompt-loader"
 // kilocode_change end
 
 // kilocode_change start
 export function instructions() {
-  return PROMPT_CODEX.trim()
+  return KiloPromptLoader.getSync("codex", PROMPT_CODEX).trim()
 }
 
 export function soul() {
-  return SOUL.trim()
+  return KiloPromptLoader.getSync("soul", SOUL).trim()
 }
 // kilocode_change end
 
@@ -40,21 +41,21 @@ export function provider(model: Provider.Model) {
   function prompt() {
     switch (model.prompt) {
       case "anthropic":
-        return [PROMPT_ANTHROPIC]
+        return [KiloPromptLoader.getSync("anthropic", PROMPT_ANTHROPIC)]
       case "anthropic_without_todo":
-        return [PROMPT_DEFAULT]
+        return [KiloPromptLoader.getSync("default", PROMPT_DEFAULT)]
       case "beast":
-        return [PROMPT_BEAST]
+        return [KiloPromptLoader.getSync("beast", PROMPT_BEAST)]
       case "codex":
-        return [PROMPT_CODEX]
+        return [KiloPromptLoader.getSync("codex", PROMPT_CODEX)]
       case "gemini":
-        return [PROMPT_GEMINI]
+        return [KiloPromptLoader.getSync("gemini", PROMPT_GEMINI)]
       case "gpt55":
-        return [PROMPT_GPT55]
+        return [KiloPromptLoader.getSync("gpt55", PROMPT_GPT55)]
       case "ling":
-        return [PROMPT_LING]
+        return [KiloPromptLoader.getSync("ling", PROMPT_LING)]
       case "trinity":
-        return [PROMPT_TRINITY]
+        return [KiloPromptLoader.getSync("trinity", PROMPT_TRINITY)]
     }
     return undefined
   }
@@ -64,19 +65,19 @@ export function provider(model: Provider.Model) {
   // kilocode_change end
 
   if (model.api.id.includes("gpt-4") || model.api.id.includes("o1") || model.api.id.includes("o3"))
-    return [PROMPT_BEAST]
+    return [KiloPromptLoader.getSync("beast", PROMPT_BEAST)]
   if (model.api.id.includes("gpt")) {
     if (model.api.id.includes("codex")) {
-      return [PROMPT_CODEX]
+      return [KiloPromptLoader.getSync("codex", PROMPT_CODEX)]
     }
-    return [PROMPT_GPT]
+    return [KiloPromptLoader.getSync("gpt", PROMPT_GPT)]
   }
-  if (model.api.id.includes("gemini-")) return [PROMPT_GEMINI]
-  if (model.api.id.includes("claude")) return [PROMPT_ANTHROPIC]
-  if (model.api.id.toLowerCase().includes("trinity")) return [PROMPT_TRINITY]
-  if (model.api.id.toLowerCase().includes("kimi")) return [PROMPT_KIMI]
-  if (isLing(model.api.id)) return [PROMPT_LING] // kilocode_change
-  return [PROMPT_DEFAULT]
+  if (model.api.id.includes("gemini-")) return [KiloPromptLoader.getSync("gemini", PROMPT_GEMINI)]
+  if (model.api.id.includes("claude")) return [KiloPromptLoader.getSync("anthropic", PROMPT_ANTHROPIC)]
+  if (model.api.id.toLowerCase().includes("trinity")) return [KiloPromptLoader.getSync("trinity", PROMPT_TRINITY)]
+  if (model.api.id.toLowerCase().includes("kimi")) return [KiloPromptLoader.getSync("kimi", PROMPT_KIMI)]
+  if (isLing(model.api.id)) return [KiloPromptLoader.getSync("ling", PROMPT_LING)] // kilocode_change
+  return [KiloPromptLoader.getSync("default", PROMPT_DEFAULT)]
 }
 
 export interface Interface {

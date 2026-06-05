@@ -20,6 +20,7 @@ import { Filesystem } from "@/util/filesystem"
 import { InstanceState } from "@/effect/instance-state"
 import PROMPT_PLAN from "@/session/prompt/plan.txt"
 import CODE_SWITCH from "@/session/prompt/code-switch.txt"
+import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 
 export namespace KiloSessionPrompt {
   const modes = ["ask", "plan"]
@@ -252,9 +253,10 @@ export namespace KiloSessionPrompt {
         ? "This is the ONLY file you are allowed to write to or edit."
         : "Use this as the main plan file to write or edit. Do not write or edit other files unless the user explicitly asks and your permissions allow it."
     const planFile = `## Plan File\n${info}\n${limit}`
+    const planText = await KiloPromptLoader.getAsync("plan", PROMPT_PLAN) // kilocode_change
     const text =
       input.agent.name === "plan"
-        ? `${PROMPT_PLAN}\n\n${planFile}`
+        ? `${planText}\n\n${planFile}` // kilocode_change
         : `<system-reminder>\n${planFile} Before writing this file or calling plan_exit, ask the user to choose exactly one of: "Finalize and save the plan" or "Continue refining". If the user chooses to finalize, write the main plan to this exact file, then call plan_exit with no arguments. If the user explicitly asks for additional plan files and your permissions allow it, you may create them and reference them from the main plan.\n</system-reminder>`
     input.userMessage.parts.push({
       id: PartID.ascending(),

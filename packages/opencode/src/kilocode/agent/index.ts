@@ -14,6 +14,7 @@ import PROMPT_DEBUG from "../../agent/prompt/debug.txt"
 import PROMPT_ORCHESTRATOR from "../../agent/prompt/orchestrator.txt"
 import PROMPT_ASK from "../../agent/prompt/ask.txt"
 import PROMPT_EXPLORE from "../../agent/prompt/explore.txt"
+import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 
 export const bash: Record<string, "allow" | "ask" | "deny"> = {
   "*": "ask",
@@ -371,8 +372,8 @@ export function patchAgents(
         user,
       ),
       prompt: cfg.experimental?.codebase_search
-        ? `Prefer using the codebase_search tool for codebase searches — it performs intelligent multi-step code search and returns the most relevant code spans.\n\n${PROMPT_EXPLORE}`
-        : PROMPT_EXPLORE,
+        ? `Prefer using the codebase_search tool for codebase searches — it performs intelligent multi-step code search and returns the most relevant code spans.\n\n${KiloPromptLoader.getSync("explore", PROMPT_EXPLORE)}` // kilocode_change
+        : KiloPromptLoader.getSync("explore", PROMPT_EXPLORE), // kilocode_change
     }
   }
 
@@ -380,7 +381,7 @@ export function patchAgents(
   agents.debug = {
     name: "debug",
     description: "Diagnose and fix software issues with systematic debugging methodology.",
-    prompt: PROMPT_DEBUG,
+    prompt: KiloPromptLoader.getSync("debug", PROMPT_DEBUG), // kilocode_change
     options: {},
     permission: Permission.merge(
       defaults,
@@ -400,7 +401,7 @@ export function patchAgents(
   agents.orchestrator = {
     name: "orchestrator",
     description: "Coordinate complex tasks by delegating to specialized agents in parallel.",
-    prompt: PROMPT_ORCHESTRATOR,
+    prompt: KiloPromptLoader.getSync("orchestrator", PROMPT_ORCHESTRATOR), // kilocode_change
     options: {},
     permission: Permission.merge(
       defaults,
@@ -439,7 +440,7 @@ export function patchAgents(
   agents.ask = {
     name: "ask",
     description: "Get answers and explanations without making changes to the codebase.",
-    prompt: PROMPT_ASK,
+    prompt: KiloPromptLoader.getSync("ask", PROMPT_ASK), // kilocode_change
     options: {},
     permission: Permission.merge(defaults, askGuard(kilo.mcpRules), user, askEditGuard(), denies(user)),
     mode: "primary",

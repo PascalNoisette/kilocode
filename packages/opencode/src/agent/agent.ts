@@ -17,6 +17,7 @@ import { Permission } from "@/permission"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@opencode-ai/core/global"
 import { KilocodePaths } from "@/kilocode/paths" // kilocode_change
+import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 import { Flag } from "@opencode-ai/core/flag/flag"
 import path from "path"
 import { Plugin } from "@/plugin"
@@ -204,7 +205,7 @@ export const layer = Layer.effect(
               user,
             ),
             description: `Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.`,
-            prompt: PROMPT_EXPLORE,
+            prompt: KiloPromptLoader.getSync("explore", PROMPT_EXPLORE), // kilocode_change
             options: {},
             mode: "subagent",
             native: true,
@@ -233,7 +234,7 @@ export const layer = Layer.effect(
                     user,
                   ),
                   description: `Docs and dependency-source specialist. Use this when you need to inspect external documentation, clone dependency repositories into the managed cache, and research library implementation details without modifying the user's workspace.`,
-                  prompt: PROMPT_SCOUT,
+                  prompt: KiloPromptLoader.getSync("scout", PROMPT_SCOUT), // kilocode_change
                   options: {},
                   mode: "subagent" as const,
                   native: true,
@@ -245,7 +246,7 @@ export const layer = Layer.effect(
             mode: "primary",
             native: true,
             hidden: true,
-            prompt: PROMPT_COMPACTION,
+            prompt: KiloPromptLoader.getSync("compaction", PROMPT_COMPACTION), // kilocode_change
             permission: Permission.merge(
               defaults,
               Permission.fromConfig({
@@ -269,7 +270,7 @@ export const layer = Layer.effect(
               }),
               user,
             ),
-            prompt: PROMPT_TITLE,
+            prompt: KiloPromptLoader.getSync("title", PROMPT_TITLE), // kilocode_change
           },
           summary: {
             name: "summary",
@@ -284,7 +285,7 @@ export const layer = Layer.effect(
               }),
               user,
             ),
-            prompt: PROMPT_SUMMARY,
+            prompt: KiloPromptLoader.getSync("summary", PROMPT_SUMMARY), // kilocode_change
           },
         }
 

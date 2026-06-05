@@ -28,6 +28,7 @@ import { Instruction } from "./instruction"
 import { Plugin } from "../plugin"
 import CODE_SWITCH from "../session/prompt/code-switch.txt"
 import MAX_STEPS from "../session/prompt/max-steps.txt"
+import { KiloPromptLoader } from "@/kilocode/prompt-loader" // kilocode_change
 import { ToolRegistry } from "@/tool/registry"
 import { MCP } from "../mcp"
 import { LSP } from "@/lsp/lsp"
@@ -263,12 +264,13 @@ export const layer = Layer.effect(
         const wasPlan = input.messages.some((msg) => msg.info.role === "assistant" && msg.info.agent === "plan")
         if (wasPlan && input.agent.name === "code") {
           // kilocode_change - renamed from "build" to "code"
+          const cs = yield* KiloPromptLoader.get("code-switch", CODE_SWITCH, fsys) // kilocode_change
           userMessage.parts.push({
             id: PartID.ascending(),
             messageID: userMessage.info.id,
             sessionID: userMessage.info.sessionID,
             type: "text",
-            text: CODE_SWITCH, // kilocode_change - renamed from BUILD_SWITCH to CODE_SWITCH
+            text: cs, // kilocode_change
             synthetic: true,
           })
         }
@@ -280,12 +282,13 @@ export const layer = Layer.effect(
         const ctx = yield* InstanceState.context
         const plan = Session.plan(input.session, ctx)
         if (!(yield* fsys.existsSafe(plan))) return input.messages
+        const cs = yield* KiloPromptLoader.get("code-switch", CODE_SWITCH, fsys) // kilocode_change
         const part = yield* sessions.updatePart({
           id: PartID.ascending(),
           messageID: userMessage.info.id,
           sessionID: userMessage.info.sessionID,
           type: "text",
-          text: `${CODE_SWITCH}\n\nA plan file exists at ${plan}. You should execute on the plan defined within it`, // kilocode_change - renamed from BUILD_SWITCH to CODE_SWITCH
+          text: `${cs}\n\nA plan file exists at ${plan}. You should execute on the plan defined within it`, // kilocode_change
           synthetic: true,
         })
         userMessage.parts.push(part)
@@ -1756,7 +1759,12 @@ NOTE: At any point in time through this workflow you should feel free to ask the
             sessionID,
             parentSessionID: session.parentID,
             system,
-            messages: [...modelMsgs, ...(isLastStep ? [{ role: "assistant" as const, content: MAX_STEPS }] : [])],
+            messages: [
+              ...modelMsgs,
+              ...(isLastStep
+                ? [{ role: "assistant" as const, content: yield* KiloPromptLoader.get("max-steps", MAX_STEPS, fsys) }] // kilocode_change
+                : []),
+            ], // kilocode_change
             tools,
             model,
             toolChoice: format.type === "json_schema" ? "required" : undefined,

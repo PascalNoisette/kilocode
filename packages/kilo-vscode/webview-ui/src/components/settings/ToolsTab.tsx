@@ -41,6 +41,25 @@ export const ToolsTab: Component = () => {
     return agents().every((a) => isEnabled(a.name, toolId))
   }
 
+  const isAgentEnabledForAllTools = (agentName: string) => {
+    return tools().every((t) => isEnabled(agentName, t.id))
+  }
+
+  const toggleAllToolsForAgent = (agentName: string, enabled: boolean) => {
+    const action = enabled ? "allow" : "deny"
+    const toolPermissions: Record<string, any> = { "*": action }
+    for (const t of tools()) {
+      toolPermissions[t.id] = action
+    }
+    updateConfig({
+      agent: {
+        [agentName]: {
+          permission: toolPermissions,
+        },
+      },
+    })
+  }
+
   const toggleAllAgentsForTool = (toolId: string, enabled: boolean) => {
     const action = enabled ? "allow" : "deny"
     const agentCfg: Record<string, any> = {}
@@ -76,7 +95,10 @@ export const ToolsTab: Component = () => {
                 <th class="settings-tools-matrix-tool-header">Tool</th>
                 <For each={agents()}>
                   {(agent) => (
-                    <th class="settings-tools-matrix-agent-header">
+                    <th
+                      class="settings-tools-matrix-agent-header"
+                      onClick={() => toggleAllToolsForAgent(agent.name, !isAgentEnabledForAllTools(agent.name))}
+                    >
                       <div class="settings-tools-matrix-agent-info">
                         <span>{agent.displayName || agent.name}</span>
                       </div>

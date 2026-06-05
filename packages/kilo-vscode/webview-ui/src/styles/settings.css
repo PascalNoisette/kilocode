@@ -193,17 +193,27 @@
 .settings-tools-matrix-tool-header {
   width: 35%;
   min-width: 200px;
+  z-index: 10;
 }
 
 .settings-tools-matrix-agent-header {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  cursor: pointer;
+  user-select: none;
   text-align: center;
+}
 
-  .settings-tools-matrix-agent-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
+.settings-tools-matrix-agent-header:hover {
+  color: var(--vscode-textLink-foreground);
+}
+
+.settings-tools-matrix-agent-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
 .settings-tools-matrix-row {
@@ -255,6 +265,10 @@
 
 .settings-tools-matrix-master-checkbox:hover .settings-tools-matrix-tool-id {
   color: var(--vscode-textLink-foreground);
+}
+
+.settings-tools-matrix-tool-cell {
+  z-index: 1;
 }
 
 .settings-tools-matrix-checkbox-cell {

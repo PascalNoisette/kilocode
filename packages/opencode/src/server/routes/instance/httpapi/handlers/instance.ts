@@ -4,8 +4,10 @@ import * as InstanceState from "@/effect/instance-state"
 import { Format } from "@/format"
 import { Global } from "@opencode-ai/core/global"
 import { LSP } from "@/lsp/lsp"
+import { MCP } from "@/mcp" // kilocode_change
 import { Vcs } from "@/project/vcs"
 import { Skill } from "@/skill"
+import { ToolRegistry } from "@/tool/registry" // kilocode_change
 import { Effect } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { InstanceHttpApi } from "../api"
@@ -18,6 +20,10 @@ export const instanceHandlers = HttpApiBuilder.group(InstanceHttpApi, "instance"
     const command = yield* Command.Service
     const format = yield* Format.Service
     const lsp = yield* LSP.Service
+    // kilocode_change start
+    const mcp = yield* MCP.Service
+    const toolReg = yield* ToolRegistry.Service
+    // kilocode_change end
     const skill = yield* Skill.Service
     const vcs = yield* Vcs.Service
 
@@ -81,6 +87,23 @@ export const instanceHandlers = HttpApiBuilder.group(InstanceHttpApi, "instance"
       return yield* skill.all()
     })
 
+    // kilocode_change start
+    const getTool = Effect.fn("InstanceHttpApi.tool")(function* () {
+      const builtin = yield* toolReg.all()
+      const mcpTools = yield* mcp.tools()
+      const results: Array<{ id: string; description: string }> = builtin.map(
+        (t: { id: string; description: string }) => ({
+          id: t.id,
+          description: t.description,
+        }),
+      )
+      for (const [id, tool] of Object.entries(mcpTools)) {
+        results.push({ id, description: (tool as { description?: string }).description ?? "MCP Tool" })
+      }
+      return results
+    })
+    // kilocode_change end
+
     const getLsp = Effect.fn("InstanceHttpApi.lsp")(function* () {
       return yield* lsp.status()
     })
@@ -89,18 +112,23 @@ export const instanceHandlers = HttpApiBuilder.group(InstanceHttpApi, "instance"
       return yield* format.status()
     })
 
-    return handlers
-      .handle("dispose", dispose)
-      .handle("path", getPath)
-      .handle("vcs", getVcs)
-      .handle("vcsStatus", getVcsStatus)
-      .handle("vcsDiff", getVcsDiff)
-      .handle("vcsDiffRaw", getVcsDiffRaw)
-      .handle("vcsApply", applyVcs)
-      .handle("command", getCommand)
-      .handle("agent", getAgent)
-      .handle("skill", getSkill)
-      .handle("lsp", getLsp)
-      .handle("formatter", getFormatter)
+    return (
+      handlers
+        .handle("dispose", dispose)
+        .handle("path", getPath)
+        .handle("vcs", getVcs)
+        .handle("vcsStatus", getVcsStatus)
+        .handle("vcsDiff", getVcsDiff)
+        .handle("vcsDiffRaw", getVcsDiffRaw)
+        .handle("vcsApply", applyVcs)
+        .handle("command", getCommand)
+        .handle("agent", getAgent)
+        .handle("skill", getSkill)
+        // kilocode_change start
+        .handle("tool", getTool)
+        // kilocode_change end
+        .handle("lsp", getLsp)
+        .handle("formatter", getFormatter)
+    )
   }),
 )

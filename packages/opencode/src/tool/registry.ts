@@ -322,6 +322,12 @@ export const layer: Layer.Layer<
 
     const tools: Interface["tools"] = Effect.fn("ToolRegistry.tools")(function* (input) {
       const filtered = (yield* all()).filter((tool) => {
+        // kilocode_change start
+        if (Permission.evaluate(tool.id, "*", input.agent.permission).action === "deny") {
+          return false
+        }
+        // kilocode_change end
+
         if (tool.id === WebSearchTool.id) {
           return webSearchEnabled(input.providerID)
         }

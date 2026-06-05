@@ -50,6 +50,7 @@ export const InstancePaths = {
   command: "/command",
   agent: "/agent",
   skill: "/skill",
+  tool: "/tool", // kilocode_change
   lsp: "/lsp",
   formatter: "/formatter",
 } as const
@@ -165,6 +166,21 @@ export const InstanceApi = HttpApi.make("instance")
             description: "Get a list of all available skills in the OpenCode system.",
           }),
         ),
+        // kilocode_change start
+        HttpApiEndpoint.get("tool", InstancePaths.tool, {
+          query: WorkspaceRoutingQuery,
+          success: described(
+            Schema.Array(Schema.Struct({ id: Schema.String, description: Schema.String })),
+            "List of tools",
+          ),
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.tools",
+            summary: "List tools",
+            description: "Get a list of all available tools in the Kilo system, including MCP tools.",
+          }),
+        ),
+        // kilocode_change end
         HttpApiEndpoint.get("lsp", InstancePaths.lsp, {
           query: WorkspaceRoutingQuery,
           success: described(Schema.Array(LSP.Status), "LSP server status"),
